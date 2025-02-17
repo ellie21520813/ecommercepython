@@ -83,7 +83,7 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     products = models.ManyToManyField(Product, through='OrderItem')
     total_price = models.DecimalField(max_digits=100, decimal_places=2)
-    shipping_address = models.FileField()
+    shipping_address = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -1,9 +1,12 @@
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.db import transaction
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import serializers
+
 
 from .models import (
     User, Vendor, Category, Product, Order, OrderItem, Cart, CartItem, Shipping, Payment, Coupon, Review, Wishlist,
@@ -154,11 +157,47 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
 
 
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
+    def get(self):
+        user = self.request.User
+        if user.is_staff:
+            return Order.objects.all
+        return Order.objects.filter(user=User)
+
+    def post(self, request):
+        user = request.user
+        data = request.data
+        order_items = data.get('order_items', [])
+        shipping_address = data.get('shipping_address', None)
+
+        if not order_items:
+            return Response({'message': 'order items are required'}, status=status.HTTP_400_BAD_REQUEST)
+        with transaction.atomic():
+            total_price =0
+            order = Order.objects.create(user=user, total_price=0, shipping_address=shipping_address)
+            for item in order_items:
+                product_id = item.get('product_id')
+                quantity = item.get('quantity')
+
+                product = Product.objects.get(id=product_id)
+                if product.stock < quantity:
+                    raise serializers.ValidationError({'message': 'Not enough stock for product'})
+
+                OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    quantity=quantity,
+                )
+                total_price += product.price * quantity
+                product.stock -= quantity
+                product.save()
+            order.total_price = total_price
+            order.save()
+        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
 @permission_classes([AllowAny])
 class OrderItemViewSet(viewsets.ModelViewSet):

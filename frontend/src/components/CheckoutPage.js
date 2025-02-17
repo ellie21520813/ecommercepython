@@ -5,6 +5,15 @@ import  'react-phone-input-2/lib/style.css';
 
 const CheckoutPage=({cart, setCart})=>{
     const navigate = useNavigate();
+    /*const [formdata, setFormData] = useState(
+        {
+            cart.map(item=>({
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity
+            }))
+        }
+    )*/
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [country, setCountry] = useState("");
@@ -17,7 +26,8 @@ const CheckoutPage=({cart, setCart})=>{
             (total, item)=> total + parseFloat(item.price)* item.quantity,0
         )
     }
-    const handleSubmit=()=>{
+    const handleSubmit= async(e)=>{
+        e.preventDefault();
         console.log("Order submission:",{
             fullName,
             email,
