@@ -177,7 +177,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    products = ProductSerializer(read_only=True)
+    products = ProductSerializer(read_only=True, many=True)
 
     class Meta:
         model = Order
@@ -190,17 +190,19 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CartSerializer(serializers.ModelSerializer):
-    items = ProductSerializer(read_only=True)
+class CartItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
 
     class Meta:
-        model = Cart
+        model = CartItem
         fields = '__all__'
 
 
-class CartItemSerializer(serializers.ModelSerializer):
+class CartSerializer(serializers.ModelSerializer):
+    items = CartItemSerializer(read_only=True, many=True)
+
     class Meta:
-        model = CartItem
+        model = Cart
         fields = '__all__'
 
 

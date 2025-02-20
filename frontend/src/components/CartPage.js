@@ -1,13 +1,23 @@
 import React, {useEffect, useState} from 'react';
 import {Link,useNavigate, useParams} from "react-router-dom";
+import {useDispatch, useSelector} from "react-redux";
+import {fetchCarts} from "../redux/actions/cartsActions";
+import {deleteCartItems} from "../redux/actions/cartItemsActions";
 
 const CartPage=({cart, setCart})=>{
+    const dispatch = useDispatch();
     const navigate = useNavigate();
+    const cartitems = useSelector((state) => state.carts)
+    console.log(cartitems)
+    useEffect(() => {
+        dispatch(fetchCarts())
+    }, [dispatch]);
     const handleRemoveFromCart = (itemToRemove)=>{
-        const updateCart = cart.filter((item)=> item.id !== itemToRemove.id);
+        /* updateCart = cartitems.filter((item)=> item.id !== itemToRemove.id);
         localStorage.setItem("cart", JSON.stringify(updateCart));
-        setCart(updateCart);
-    }
+        setCart(updateCart);*/
+        dispatch(deleteCartItems());
+    };
 
     const handleUpdateQuantity = (item, newQuantity)=>{
         const updateCart = cart.map((cartItem)=> {
@@ -44,27 +54,29 @@ const CartPage=({cart, setCart})=>{
                         </tr>
                     </thead>
                     <tbody>
-                    {cart.map((item) =>(
-                        <tr key={item.id}>
-                            <td>
-                                <Link to={`/products/${item.slug}`}>{item.name}</Link>
-                            </td>
-                            <td>${parseFloat(item.price).toFixed(2)}</td>
-                            <td>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    value={item.quantity}
-                                    onChange={(e)=>handleUpdateQuantity(item, parseInt(e.target.value))}
-                                />
-                            </td>
-                            <td>
-                                ${(parseFloat(item.price )* item.quantity).toFixed(2)}
-                            </td>
-                            <td>
-                                <button onClick={()=>handleRemoveFromCart(item)}>Remove</button>
-                            </td>
-                        </tr>
+                    {cartitems.map((cart) =>(
+                        cart.items.map((item) =>
+                            <tr key={item.product.id}>
+                                <td>
+                                    <Link to={`/products/${item.product.slug}`}>{item.product.name}</Link>
+                                </td>
+                                <td>${parseFloat(item.product.price).toFixed(2)}</td>
+                                <td>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={item.quantity}
+                                        onChange={(e) => handleUpdateQuantity(item, parseInt(e.target.value))}
+                                    />
+                                </td>
+                                <td>
+                                    ${(parseFloat(item.product.price) * item.quantity).toFixed(2)}
+                                </td>
+                                <td>
+                                    <button onClick={() => handleRemoveFromCart(item)}>Remove</button>
+                                </td>
+                            </tr>
+                        )
                     ))}
                     </tbody>
                 </table>

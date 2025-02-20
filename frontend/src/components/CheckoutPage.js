@@ -2,50 +2,83 @@ import React, {useEffect, useState} from 'react';
 import {Link, useNavigate} from "react-router-dom";
 import PhoneInput from "react-phone-input-2";
 import  'react-phone-input-2/lib/style.css';
+import axios from "axios";
 
 const CheckoutPage=({cart, setCart})=>{
     const navigate = useNavigate();
-    /*const [formdata, setFormData] = useState(
-        {
-            cart.map(item=>({
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity
-            }))
-        }
-    )*/
-    const [fullName, setFullName] = useState("");
-    const [email, setEmail] = useState("");
-    const [country, setCountry] = useState("");
-    const [phone, setPhone] = useState("");
-    const [state, setState] = useState("");
-    const [paymentMethod, setPaymentMethod] = useState("");
-
     const calculateTotal =()=>{
         return cart.reduce(
             (total, item)=> total + parseFloat(item.price)* item.quantity,0
         )
     }
+
+    const [formdata, setFormData] =useState(
+        {
+            name_order:"",
+            email_order:"",
+            phone_order:"",
+            shipping_address:"",
+            total_price: calculateTotal()
+
+        }
+    )
+    /*const [fullName, setFullName] = useState("");
+    const [email, setEmail] = useState("");
+    const [country, setCountry] = useState("");
+    const [phone, setPhone] = useState("");
+    const [state, setState] = useState("");
+    const [paymentMethod, setPaymentMethod] = useState("");*/
+    const [country, setCountry] = useState("");
+    const [phone, setPhone] = useState("");
+    const [paymentMethod, setPaymentMethod] = useState("")
+
+
+
+    const handleOnchange = (e) =>{
+        setFormData({...formdata, [e.target.name]: e.target.value})
+    }
+    const {name_order,  email_order, phone_order, shipping_address, total_price} = formdata
+
     const handleSubmit= async(e)=>{
         e.preventDefault();
-        console.log("Order submission:",{
-            fullName,
-            email,
-            country,
-            phone,
-            state,
-            paymentMethod,
-            cart,
-            total: calculateTotal()
-        })
+        try{
+            const token = JSON.parse(localStorage.getItem('token'))
+            if (!token) {
+                alert("Bạn cần đăng nhập trước khi đặt hàng.");
+                navigate("/login");
+                return;
+        }
+            const orderData = {
+                ...formdata,
+                order_items: cart.map(item => ({
+                product_id: item.id,
+                quantity: item.quantity
+                }))
+            };
+            const response = await axios.post('http://localhost:8000/api/orders/', orderData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,  // Gửi token
+                        "Content-Type": "application/json"
+                        }
+                    });
+            console.log("Order created successfully:", response.data);
+            if(response.status === 201){
+                navigate('/dashboard')
+                alert('order created successfully')
+            }
+        } catch(error){
+            console.error("Error creating order:", error);
+            alert('Error creating order')
+        }
         setCart([]);
         localStorage.removeItem("cart")
-        if(paymentMethod === "momo"){
+        /*if(paymentMethod === "momo"){
             navigate("/momo-payment")
         }
         else if(paymentMethod === "paypal"){
             navigate("/paypal-payment")
-        }
+        }*/
 
     }
     return(
@@ -53,87 +86,81 @@ const CheckoutPage=({cart, setCart})=>{
             <h2>Checkout Page</h2>
             <form onSubmit={handleSubmit}>
                 <div>
-                    <label htmlFor="fullName"> FullName: </label>
+                    <label htmlFor="name_order"> Name: </label>
                     <input
                         type="text"
-                        id="fullName"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
+                        id="name_order"
+                        value={name_order}
+                        name="name_order"
+                        onChange={handleOnchange}
                         required
                     />
                 </div>
                 <div>
-                    <label htmlFor="email"> Email: </label>
+                    <label htmlFor="email_order"> Email: </label>
                     <input
                         type="email"
-                        id="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        id="email_order"
+                        name="email_order"
+                        value={email_order}
+                        onChange={handleOnchange}
                         required
                     />
                 </div>
                 <div>
-                    <label htmlFor="phone"> Phone: </label>
-                    <PhoneInput
-                        id="phone"
-                        country={"vietnam"}
-                        value={phone}
-                        onChange={(value) => setPhone(value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="country"> Country: </label>
+                    <label htmlFor="phone_order"> Phone: </label>
                     <input
                         type="text"
-                        id="country"
-                        value={country}
-                        onChange={(e) => setCountry(e.target.value)}
+                        id="phone_order"
+                        value={phone_order}
+                        name="phone_order"
+                        onChange={handleOnchange}
                         required
                     />
                 </div>
                 <div>
-                    <label htmlFor="state"> State: </label>
+                    <label htmlFor="shipping_address"> Address: </label>
                     <input
                         type="text"
-                        id="state"
-                        value={state}
-                        onChange={(e) => setState(e.target.value)}
+                        id="shipping_address"
+                        value={shipping_address}
+                        name="shipping_address"
+                        onChange={handleOnchange}
                         required
                     />
                 </div>
-            </form>
-            <div>
-                <h4>Payment Method</h4>
                 <div>
-                    <input
-                        type="radio"
-                        id="momo"
-                        name="paymentMethod"
-                        value="momo"
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                        required
-                    />
-                    <label htmlFor="momo"> Momo</label>
-                </div>
-                <div>
-                    <input
-                        type="radio"
-                        id="paypal"
-                        name="paymentMethod"
-                        value="paypal"
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                        required
-                    />
-                    <label htmlFor="paypal"> PayPal</label>
-                </div>
-                <div>
-                    <h4>Oder summary: </h4>
-                    <p>Total: ${calculateTotal().toFixed(2)}</p>
+                    <h4>Payment Method</h4>
+                    <div>
+                        <input
+                            type="radio"
+                            id="momo"
+                            name="paymentMethod"
+                            value="momo"
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                            required
+                        />
+                        <label htmlFor="momo"> Momo</label>
+                    </div>
+                    <div>
+                        <input
+                            type="radio"
+                            id="paypal"
+                            name="paymentMethod"
+                            value="paypal"
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                            required
+                        />
+                        <label htmlFor="paypal"> PayPal</label>
+                    </div>
+                    <div>
+                        <h4>Oder summary: </h4>
+                        <p>Total: ${calculateTotal().toFixed(2)}</p>
+                    </div>
                 </div>
                 <button type="submit">Place oder</button>
+            </form>
 
-            </div>
         </div>
     )
 }

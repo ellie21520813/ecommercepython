@@ -80,7 +80,10 @@ class Product(models.Model):
 
 
 class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders',  null=True)
+    name_order = models.TextField(max_length=255, null=True, blank=True)
+    phone_order = models.TextField(max_length=255, null=True, blank=True)
+    email_order = models.EmailField(null=True, blank=True)
     products = models.ManyToManyField(Product, through='OrderItem')
     total_price = models.DecimalField(max_digits=100, decimal_places=2)
     shipping_address = models.CharField(max_length=255)
@@ -95,18 +98,14 @@ class OrderItem(models.Model):
 
 
 class Cart(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='carts', null=True, blank=True)
-    session_id = models.CharField(max_length=100)
-    item = models.ManyToManyField(Product, through='CartItem')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='carts', null=True, blank=True)
+    item = models.ManyToManyField(Product, through='CartItem', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.session_id
-
 
 class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items', null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
 

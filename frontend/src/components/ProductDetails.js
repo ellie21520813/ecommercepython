@@ -37,20 +37,37 @@ const ProductDetails = ({})=>{
         return <div>Loading...</div>;
     }
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async (e) => {
+        const token = JSON.parse(localStorage.getItem('token'))
         const cartItems ={
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            slug: product.slug,
+            product: product.id,
             quantity: quantity,
         };
+        console.log("Cart request data:", cartItems);
+
         const updatedCart = cart.concat(cartItems);
         localStorage.setItem("cart", JSON.stringify(updatedCart));
         setCart(updatedCart);
+        try{
+            const response = await axios.post("http://localhost:8000/api/cart-items/", cartItems,{
+                    headers: {
+                        Authorization: `Bearer ${token}`,  // Gửi token
+                        "Content-Type": "application/json"
+                        }
+                    });
+            console.log(response.data);
+            if(response.status ===201){
+                alert("Product added to cart successfully!");
+                navigate('/cart');
+            }
+            else{
+                alert("Failed to add product to cart!");
+            }
+        }  catch(error){
+            console.log(error);
+        }
 
-        navigate('/cart');
+
     }
 
     const handleRemoveFromCart =(itemToRemove) => {

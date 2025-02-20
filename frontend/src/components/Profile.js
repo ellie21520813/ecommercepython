@@ -21,6 +21,10 @@ const Profile = () => {
       const res =await AxiosInstance.get('get-something/')
       console.log(res.data)
   }
+  const getOrder = async ()=>{
+       const res =await AxiosInstance.get('orders')
+       console.log(res.data)
+  }
   return (
     <div className='container'>
         <h2>hi {user && user.name}</h2>

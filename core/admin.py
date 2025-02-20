@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db import transaction
+
 from .models import (
     User, Vendor, Category, Product, Order, OrderItem, Cart, CartItem, Shipping, Payment, Coupon, Review, Wishlist,
     Notification, Blog, Contact, FAQ, Analytics, Configuration, Tax, Subscription, Refund
@@ -24,6 +26,14 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ('email', 'name')
     ordering = ('email',)
     filter_horizontal = ()
+
+    class OrderAdmin(admin.ModelAdmin):
+        def delete_model(self, request, obj):
+            with transaction.atomic():
+                obj.items.all().delete()  # Xóa OrderItem trước
+                obj.delete()  # Sau đó xóa Order
+
+
 # Register your models here.
 admin.site.register(User)
 admin.site.register(Vendor)

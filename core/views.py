@@ -6,6 +6,8 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import serializers
+import logging
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 from .models import (
@@ -54,6 +56,7 @@ class VerifyUserEmail(GenericAPIView):
             if not user.is_verified:
                 user.is_verified = True
                 user.save()
+                cart = Cart.objects.create(user=user)
                 return Response({
                     'message': 'account email verified successfully'
                 }, status=status.HTTP_200_OK)
@@ -106,7 +109,8 @@ class TestingAuthenticatedReq(GenericAPIView):
 
     def get(self, request):
         data = {
-            'msg': 'its works'
+            'msg': 'its works',
+            'user': request.user.id
         }
         return Response(data, status=status.HTTP_200_OK)
 
@@ -159,44 +163,50 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 @permission_classes([IsAuthenticated])
 class OrderViewSet(viewsets.ModelViewSet):
+    authentication_classes = [JWTAuthentication]
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
-    def get(self):
-        user = self.request.User
-        if user.is_staff:
-            return Order.objects.all
-        return Order.objects.filter(user=User)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def list(self, request):
+        user = self.request.user
+        order = Order.objects.filter(user=user)
+        serializer = OrderSerializer(order,many=True)
+        return Response(serializer.data)
 
     def post(self, request):
         user = request.user
+        print(f"User from request: {user} ({type(user)})")
+        if not user or not user.is_authenticated:
+            return Response({"detail": "Authentication credentials were not provided."},status=status.HTTP_401_UNAUTHORIZED)
         data = request.data
         order_items = data.get('order_items', [])
         shipping_address = data.get('shipping_address', None)
 
         if not order_items:
             return Response({'message': 'order items are required'}, status=status.HTTP_400_BAD_REQUEST)
-        with transaction.atomic():
-            total_price =0
-            order = Order.objects.create(user=user, total_price=0, shipping_address=shipping_address)
-            for item in order_items:
-                product_id = item.get('product_id')
-                quantity = item.get('quantity')
+        total_price = 0
+        order = Order.objects.create(user=user, total_price=0, shipping_address=shipping_address)
+        for item in order_items:
+            product_id = item.get('product_id')
+            quantity = item.get('quantity')
 
-                product = Product.objects.get(id=product_id)
-                if product.stock < quantity:
-                    raise serializers.ValidationError({'message': 'Not enough stock for product'})
+            product = Product.objects.get(id=product_id)
+            if product.stock < quantity:
+                raise serializers.ValidationError({'message': 'Not enough stock for product'})
 
-                OrderItem.objects.create(
-                    order=order,
-                    product=product,
-                    quantity=quantity,
-                )
-                total_price += product.price * quantity
-                product.stock -= quantity
-                product.save()
-            order.total_price = total_price
-            order.save()
+            OrderItem.objects.create(
+                order=order,
+                product=product,
+                quantity=quantity,
+            )
+            total_price += product.price * quantity
+            product.stock -= quantity
+            product.save()
+        order.total_price = total_price
+        order.save()
         return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
 @permission_classes([AllowAny])
@@ -205,16 +215,65 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     serializer_class = OrderItemSerializer
 
 
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
+    authentication_classes = [JWTAuthentication]
 
+    def list(self, request):
+        user = self.request.user
+        cart = Cart.objects.filter(user=user)
+        serializer = CartSerializer(cart, many=True)
+        return Response(serializer.data)
 
-@permission_classes([AllowAny])
 class CartItemViewSet(viewsets.ModelViewSet):
     queryset = CartItem.objects.all()
     serializer_class = CartItemSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        product_id = self.request.data.get('product')  # Lấy ID của product
+        product = Product.objects.get(id=product_id)  # Tìm product theo ID
+
+        serializer.save(cart=self.request.user.carts, product=product)
+
+    def post(self,request):
+        try:
+            quantity = request.data.get('quantity')
+            product_id = request.data.get('product')
+            if not product_id or not quantity:
+                return Response({'message': 'Product ID and quantity are required'}, status=status.HTTP_400_BAD_REQUEST)
+            product = Product.objects.get(id=product_id)
+            if product.stock < quantity:
+                return Response({'message': 'Not enough stock for product'}, status=status.HTTP_400_BAD_REQUEST)
+
+            cart_item, item_created = CartItem.objects.get_or_create(cart=self.request.user.carts, product=product)
+
+
+            if not item_created:
+                cart_item.quantity += quantity
+                cart_item.save()
+            else:
+                cart_item.quantity = quantity
+                cart_item.save()
+
+            product.stock -= quantity
+            product.save()
+            return Response(CartItemSerializer(cart_item).data,  status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        try:
+            cart_item = self.get_object()  # Lấy object cần xóa
+            cart_item.delete()  # Xóa object
+            return Response({'message': 'Cart item deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+        except CartItem.DoesNotExist:
+            return Response({'message': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @permission_classes([AllowAny])
