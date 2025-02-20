@@ -234,8 +234,8 @@ class CartItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        product_id = self.request.data.get('product')  # Lấy ID của product
-        product = Product.objects.get(id=product_id)  # Tìm product theo ID
+        product_id = self.request.data.get('product')  
+        product = Product.objects.get(id=product_id)  
 
         serializer.save(cart=self.request.user.carts, product=product)
 
