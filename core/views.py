@@ -234,12 +234,27 @@ class CartItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        product_id = self.request.data.get('product')  
-        product = Product.objects.get(id=product_id)  
+            try:
+                product_id = self.request.data.get('product')
+                product = Product.objects.get(id=product_id)
+                quantity = self.request.data.get('quantity')
+                if not quantity:
+                    return Response({'message': 'Invalid product or quantity'}, status=status.HTTP_400_BAD_REQUEST)
+                if product.stock < quantity:
+                    return Response({'message': 'Not enough stock for product'}, status=status.HTTP_400_BAD_REQUEST)
+                cart_item, item_created = CartItem.objects.get_or_create(cart=self.request.user.carts, product=product,
+                                                                        quantity=quantity)
+                if not item_created:
+                    cart_item.quantity += quantity
+                    cart_item.save()
+                else:
+                    cart_item.quantity = quantity
+                    cart_item.save()
+                return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer.save(cart=self.request.user.carts, product=product)
-
-    def post(self,request):
+    '''def post(self,request):
         try:
             quantity = request.data.get('quantity')
             product_id = request.data.get('product')
@@ -248,8 +263,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
             product = Product.objects.get(id=product_id)
             if product.stock < quantity:
                 return Response({'message': 'Not enough stock for product'}, status=status.HTTP_400_BAD_REQUEST)
-
-            cart_item, item_created = CartItem.objects.get_or_create(cart=self.request.user.carts, product=product)
+            cart_item, item_created = CartItem.objects.get_or_create(cart=self.request.user.carts, product=product.id)
 
 
             if not item_created:
@@ -264,11 +278,12 @@ class CartItemViewSet(viewsets.ModelViewSet):
             return Response(CartItemSerializer(cart_item).data,  status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+'''
     def destroy(self, request, pk=None):
         try:
-            cart_item = self.get_object()  # Lấy object cần xóa
-            cart_item.delete()  # Xóa object
+            print(f"Received pk: {pk}")
+            cart_item = self.get_object()
+            cart_item.delete()
             return Response({'message': 'Cart item deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
         except CartItem.DoesNotExist:
             return Response({'message': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)

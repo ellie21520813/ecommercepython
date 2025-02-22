@@ -16,7 +16,9 @@ const CartPage=({cart, setCart})=>{
         /* updateCart = cartitems.filter((item)=> item.id !== itemToRemove.id);
         localStorage.setItem("cart", JSON.stringify(updateCart));
         setCart(updateCart);*/
-        dispatch(deleteCartItems());
+        dispatch(deleteCartItems(itemToRemove)).then(()=>{
+            dispatch(fetchCarts())
+        });
     };
 
     const handleUpdateQuantity = (item, newQuantity)=>{
@@ -35,7 +37,13 @@ const CartPage=({cart, setCart})=>{
     }
 
     const calculateTotal=()=>{
-        return cart.reduce((total, item)=> total + (parseFloat(item.price) * item.quantity), 0);
+        let total = 0;
+        for(const cart of cartitems){
+            for(const item of cart.items){
+                total += (parseFloat(item.product.price) * item.quantity)
+            }
+        }
+        return total;
     }
     return(
         <div className="cart-page">
@@ -73,7 +81,7 @@ const CartPage=({cart, setCart})=>{
                                     ${(parseFloat(item.product.price) * item.quantity).toFixed(2)}
                                 </td>
                                 <td>
-                                    <button onClick={() => handleRemoveFromCart(item)}>Remove</button>
+                                    <button onClick={() => handleRemoveFromCart(item.id)}>Remove</button>
                                 </td>
                             </tr>
                         )
