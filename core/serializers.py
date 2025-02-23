@@ -175,18 +175,18 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OrderSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
-    products = ProductSerializer(read_only=True, many=True)
-
-    class Meta:
-        model = Order
-        fields = '__all__'
-
-
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
+        fields = '__all__'
+
+class OrderSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    products = ProductSerializer(read_only=True, many=True)
+    oder_items = OrderItemSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Order
         fields = '__all__'
 
 

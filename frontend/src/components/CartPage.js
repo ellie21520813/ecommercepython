@@ -11,7 +11,7 @@ const CartPage=({cart, setCart})=>{
     console.log(cartitems)
     useEffect(() => {
         dispatch(fetchCarts())
-    }, [dispatch]);
+    }, [dispatch, cartitems]);
     const handleRemoveFromCart = (itemToRemove)=>{
         /* updateCart = cartitems.filter((item)=> item.id !== itemToRemove.id);
         localStorage.setItem("cart", JSON.stringify(updateCart));

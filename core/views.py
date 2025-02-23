@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from rest_framework import serializers
 import logging
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.shortcuts import get_object_or_404
+
 
 
 from .models import (
@@ -168,7 +170,41 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        try:
+            user = self.request.user
+            if not user or not user.is_authenticated:
+                return Response({"detail": "Authentication credentials were not provided."},
+                                status=status.HTTP_401_UNAUTHORIZED)
+            data = self.request.data
+            order_items = data.get('order_items', [])
+            shipping_address = data.get('shipping_address')
+            if not order_items or not shipping_address:
+                return Response({'message': 'shipping address and order items are required'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            total_price = 0
+            order = Order.objects.create(user=user, total_price=0, shipping_address=shipping_address)
+            for item in order_items:
+                product_id = item.get('product_id')
+                quantity = item.get('quantity')
+                product = get_object_or_404(Product, id=product_id)
+                if product.stock < quantity:
+                    raise serializers.ValidationError({'message': 'Not enough stock for product'})
+                total_price += product.price * quantity
+                order_item = OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    quantity=quantity,
+                )
+                product.stock -= quantity
+                product.save()
+            order.total_price += total_price
+            order.save()
+            CartItem.objects.filter(cart=user.carts).delete()
+            return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        #serializer.save(user=self.request.user)
+
 
     def list(self, request):
         user = self.request.user
@@ -176,7 +212,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer = OrderSerializer(order,many=True)
         return Response(serializer.data)
 
-    def post(self, request):
+    '''def post(self, request):
         user = request.user
         print(f"User from request: {user} ({type(user)})")
         if not user or not user.is_authenticated:
@@ -207,7 +243,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             product.save()
         order.total_price = total_price
         order.save()
-        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)'''
 
 @permission_classes([AllowAny])
 class OrderItemViewSet(viewsets.ModelViewSet):

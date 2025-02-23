@@ -3,14 +3,27 @@ import {Link, useNavigate} from "react-router-dom";
 import PhoneInput from "react-phone-input-2";
 import  'react-phone-input-2/lib/style.css';
 import axios from "axios";
+import {useSelector, useDispatch} from "react-redux";
+import {fetchCarts} from "../redux/actions/cartsActions";
 
 const CheckoutPage=({cart, setCart})=>{
     const navigate = useNavigate();
-    const calculateTotal =()=>{
-        return cart.reduce(
-            (total, item)=> total + parseFloat(item.price)* item.quantity,0
-        )
+    const dispatch = useDispatch();
+    const cart_items = useSelector(state => state.carts)
+    console.log(cart_items)
+    useEffect(()=>{
+        dispatch(fetchCarts())
+    },[dispatch]);
+    const calculateTotal=()=>{
+        let total = 0;
+        for(const cart of cart_items){
+            for(const item of cart.items){
+                total += (parseFloat(item.product.price) * item.quantity)
+            }
+        }
+        return total;
     }
+
 
     const [formdata, setFormData] =useState(
         {
@@ -22,18 +35,9 @@ const CheckoutPage=({cart, setCart})=>{
 
         }
     )
-    /*const [fullName, setFullName] = useState("");
-    const [email, setEmail] = useState("");
-    const [country, setCountry] = useState("");
-    const [phone, setPhone] = useState("");
-    const [state, setState] = useState("");
-    const [paymentMethod, setPaymentMethod] = useState("");*/
     const [country, setCountry] = useState("");
     const [phone, setPhone] = useState("");
     const [paymentMethod, setPaymentMethod] = useState("")
-
-
-
     const handleOnchange = (e) =>{
         setFormData({...formdata, [e.target.name]: e.target.value})
     }
@@ -50,11 +54,12 @@ const CheckoutPage=({cart, setCart})=>{
         }
             const orderData = {
                 ...formdata,
-                order_items: cart.map(item => ({
-                product_id: item.id,
+                order_items: cart_items[0].items.map(item => ({
+                product_id: item.product.id,
                 quantity: item.quantity
                 }))
             };
+            console.log(orderData);
             const response = await axios.post('http://localhost:8000/api/orders/', orderData,
                 {
                     headers: {
@@ -71,7 +76,6 @@ const CheckoutPage=({cart, setCart})=>{
             console.error("Error creating order:", error);
             alert('Error creating order')
         }
-        setCart([]);
         localStorage.removeItem("cart")
         /*if(paymentMethod === "momo"){
             navigate("/momo-payment")
@@ -155,6 +159,39 @@ const CheckoutPage=({cart, setCart})=>{
                     </div>
                     <div>
                         <h4>Oder summary: </h4>
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {cart_items.map((cart) => (
+                                cart.items.map((item) =>
+                                    <tr key={item.product.id}>
+                                        <td>
+                                            <Link to={`/products/${item.product.slug}`}>{item.product.name}</Link>
+                                        </td>
+                                        <td>${parseFloat(item.product.price).toFixed(2)}</td>
+                                        <td>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={item.quantity}
+                                            />
+                                        </td>
+                                        <td>
+                                            ${(parseFloat(item.product.price) * item.quantity).toFixed(2)}
+                                        </td>
+                                    </tr>
+                                )
+                            ))}
+                            </tbody>
+                        </table>
+
                         <p>Total: ${calculateTotal().toFixed(2)}</p>
                     </div>
                 </div>
