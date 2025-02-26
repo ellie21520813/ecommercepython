@@ -4,16 +4,16 @@ import productsReducer from '../reducers/productsReducers';
 import categoriesReducers from '../reducers/catogoriesReducers';
 import cartsReducers from "../reducers/cartsReducers";
 import cartItemsReducers from "../reducers/cartItemsReducers";
+import orderReducer from "../reducers/ordersReducers";
+import orderitemsReducer from "../reducers/orderitemsReducers";
 
-let orderReducers;
-let orderItemsReducers;
 const rootReducer = combineReducers({
     categories : categoriesReducers,
     products : productsReducer,
     carts : cartsReducers,
     cartitems : cartItemsReducers,
-    order : orderReducers,
-    orderitemsL: orderItemsReducers
+    order : orderReducer,
+    orderitems: orderitemsReducer
 })
 const store =   createStore(rootReducer, applyMiddleware(thunk));
 

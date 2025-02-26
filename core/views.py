@@ -182,7 +182,14 @@ class OrderViewSet(viewsets.ModelViewSet):
                 return Response({'message': 'shipping address and order items are required'},
                                 status=status.HTTP_400_BAD_REQUEST)
             total_price = 0
-            order = Order.objects.create(user=user, total_price=0, shipping_address=shipping_address)
+            order = Order.objects.create(
+                user=user,
+                total_price=0,
+                shipping_address=shipping_address,
+                name_order= data.get('name_order'),
+                phone_order= data.get('phone_order'),
+                email_order= data.get('email_order')
+            )
             for item in order_items:
                 product_id = item.get('product_id')
                 quantity = item.get('quantity')
@@ -193,8 +200,9 @@ class OrderViewSet(viewsets.ModelViewSet):
                 order_item = OrderItem.objects.create(
                     order=order,
                     product=product,
-                    quantity=quantity,
+                    quantity=quantity
                 )
+                product = Product.objects.select_for_update().get(id=product_id)
                 product.stock -= quantity
                 product.save()
             order.total_price += total_price

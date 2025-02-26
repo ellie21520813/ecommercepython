@@ -2,7 +2,13 @@ import axios from "axios";
 
 export const fetchOrders = ()=> async (dispatch)=>{
     try{
-        const response = await axios.get("http://localhost:8080/orders");
+        const token = JSON.parse(localStorage.getItem('token'))
+        const response = await axios.get("http://localhost:8000/api/orders/",{
+            headers:{
+                Authorization:  `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
         dispatch({
             type: 'SET_ORDERS',
             payload: response.data

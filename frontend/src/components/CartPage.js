@@ -11,7 +11,7 @@ const CartPage=({cart, setCart})=>{
     console.log(cartitems)
     useEffect(() => {
         dispatch(fetchCarts())
-    }, [dispatch, cartitems]);
+    }, [dispatch]);
     const handleRemoveFromCart = (itemToRemove)=>{
         /* updateCart = cartitems.filter((item)=> item.id !== itemToRemove.id);
         localStorage.setItem("cart", JSON.stringify(updateCart));
@@ -62,8 +62,8 @@ const CartPage=({cart, setCart})=>{
                         </tr>
                     </thead>
                     <tbody>
-                    {cartitems.map((cart) =>(
-                        cart.items.map((item) =>
+                    {cartitems.map((cartitem) =>(
+                        cartitem.items.map((item) =>
                             <tr key={item.product.id}>
                                 <td>
                                     <Link to={`/products/${item.product.slug}`}>{item.product.name}</Link>

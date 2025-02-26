@@ -1,6 +1,6 @@
-initialState=[]
+const initialState = []
 
-const orderReducer=(state = initialState, action)=>{
+const orderReducer = (state = initialState, action) => {
     switch(action.type){
         case 'SET_ORDERS':
             return action.payload
