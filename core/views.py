@@ -3,19 +3,18 @@ from django.db import transaction
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode
 from rest_framework.generics import GenericAPIView
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import serializers
 import logging
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404
-
-
-
 from .models import (
     User, Vendor, Category, Product, Order, OrderItem, Cart, CartItem, Shipping, Payment, Coupon, Review, Wishlist,
     Notification, Blog, Contact, FAQ, Analytics, Configuration, Tax, Subscription, Refund, OneTimePassword
 )
+from .permissions import IsVendor
 from .serializers import (
     UserSerializer, VendorSerializer, CategorySerializer, ProductSerializer, OrderSerializer, OrderItemSerializer,
     CartSerializer, CartItemSerializer, ShippingSerializer, PaymentSerializer, CouponSerializer, ReviewSerializer,
@@ -112,7 +111,8 @@ class TestingAuthenticatedReq(GenericAPIView):
     def get(self, request):
         data = {
             'msg': 'its works',
-            'user': request.user.id
+            'user': request.user.id,
+            'is_vendor': request.user.is_vendor
         }
         return Response(data, status=status.HTTP_200_OK)
 
@@ -145,10 +145,36 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
 
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 class VendorViewSet(viewsets.ModelViewSet):
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+
+    def perform_create(self, serializer):
+        if not self.request.user or not self.request.user.is_authenticated:
+            return Response({"detail": "Authentication credentials were not provided."},
+                                status=status.HTTP_401_UNAUTHORIZED)
+        data = self.request.data
+        bio = data.get('bio')
+        contact_details = data.get('contact_details')
+        bank_details = data.get('bank_details')
+        shipping_policy = data.get('shipping_policy')
+        return_policy = data.get('return_policy')
+        try:
+            user = User.objects.select_for_update().get(id=self.request.user.id)
+            user.is_vendor = True
+            user.save()
+            vendor = Vendor.objects.create(
+                user=user,
+                bio=bio,
+                contact_details=contact_details,
+                bank_details=bank_details,
+                shipping_policy=shipping_policy,
+                return_policy=return_policy)
+        except Exception as e:
+            print("❌ Error creating product:", str(e))
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(VendorSerializer(vendor).data, status=status.HTTP_201_CREATED)
 
 
 @permission_classes([AllowAny])
@@ -161,7 +187,66 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    parser_classes = (MultiPartParser, FormParser)
 
+    def perform_create(self, serializer):
+        if not self.request.user or not self.request.user.is_authenticated:
+            return Response({"detail": "Authentication credentials were not provided."},
+                                status=status.HTTP_401_UNAUTHORIZED)
+        data = self.request.data
+        product_category = get_object_or_404(Category, id=data["category"])
+        product_name = data.get('name')
+        product_description = data.get('description')
+        price = data.get('price')
+        stock = data.get('stock')
+        slug = data.get('slug')
+        product_image= self.request.FILES.get('image')
+        is_flashsale = data.get('is_flashsale') in ['true', 'True', True]
+        try:
+            category = Category.objects.get(name=product_category)
+            vendor = Vendor.objects.get(user=self.request.user.id)
+            if not category and not vendor:
+                return Response({'message': 'Vendor or category not found'}, status=status.HTTP_400_BAD_REQUEST)
+            product = Product.objects.create(
+                vendor=vendor,
+                category=category,
+                name=product_name,
+                description=product_description,
+                price=price,
+                stock=stock,
+                slug=slug,
+                image=product_image,
+                is_flashsale=is_flashsale
+            )
+            return Response(ProductSerializer(product).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print("❌ Error creating product:", str(e))
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@permission_classes([IsAuthenticated,IsVendor])
+class MyProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        if not self.request.user or not self.request.user.is_authenticated:
+            return Response({"detail": "Authentication credentials were not provided."},
+                                status=status.HTTP_401_UNAUTHORIZED)
+        vendor = Vendor.objects.get(user=self.request.user.id)
+        return Product.objects.filter(vendor=vendor)
+    
+    def destroy(self, request, pk=None):
+        try:
+            print(f"Received pk: {pk}")
+            product = self.get_object()
+            product.delete()
+            return Response({'message': 'product item deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+        except Product.DoesNotExist:
+            return Response({'message': 'Product item not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
 
 @permission_classes([IsAuthenticated])
 class OrderViewSet(viewsets.ModelViewSet):
@@ -210,6 +295,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             CartItem.objects.filter(cart=user.carts).delete()
             return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
         except Exception as e:
+            print("❌ Error creating product:", str(e))
             return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         #serializer.save(user=self.request.user)
 

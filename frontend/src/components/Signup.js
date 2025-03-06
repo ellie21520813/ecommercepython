@@ -10,16 +10,17 @@ const Signup = () => {
         email:"",
         name:"",
         password:"",
-        password2:""
+        password2:"",
     })
     const [error, setError]=useState('')
 
     const handleOnchange = (e)=>{
-        setFormdata({...formdata, [e.target.name]:e.target.value})
+        const {name, type, checked, value} = e.target
+        setFormdata({...formdata,
+            [name]: type === 'checkbox' ? checked : value
+        })
+        //setFormdata({...formdata, [e.target.name]:e.target.value})
     }
-
-
-
     const {email, name, password, password2}=formdata
 
     const handleSubmit =async (e)=>{
@@ -36,6 +37,7 @@ const Signup = () => {
         }
 
         try {
+            console.log(formdata)
             const response = await axios.post('http://localhost:8000/api/signup/', formdata);
             console.log(response.data);
             const result = response.data;

@@ -30,14 +30,13 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         password2 = attrs.get('password2', '')
         if password != password2:
             raise serializers.ValidationError("passwords do not match")
-
         return attrs
 
     def create(self, validated_data):
         user = User.objects.create_user(
             email=validated_data['email'],
             name=validated_data.get('name'),
-            password=validated_data.get('password')
+            password=validated_data.get('password'),
         )
         return user
 
@@ -156,7 +155,7 @@ class UserSerializer(serializers.ModelSerializer):
 class VendorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vendor
-        fields = '__all__'
+        fields = ['bio','contact_details', 'bank_details', 'shipping_policy', 'return_policy']
 
 
 class CategorySerializer(serializers.ModelSerializer):

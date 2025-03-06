@@ -5,9 +5,14 @@ const productsReducer = (state = initialState, action) =>{
         case 'SET_PRODUCTS':
             return action.payload;
 
+        case 'SET_MY_PRODUCTS':
+            return action.payload;
+
         default:
             return state;
     }
 };
+
+
 
 export default productsReducer;

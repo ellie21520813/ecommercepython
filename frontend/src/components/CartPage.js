@@ -22,7 +22,7 @@ const CartPage=({cart, setCart})=>{
     };
 
     const handleUpdateQuantity = (item, newQuantity)=>{
-        const updateCart = cart.map((cartItem)=> {
+        const updateCart = cartitems.map((cartItem)=> {
             if(item.id === cartItem.id){
                 return {...cartItem, quantity: newQuantity}
             }

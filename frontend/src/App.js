@@ -15,7 +15,10 @@ import ResetPassword from './components/ResetPassword';
 import Profile from './components/Profile';
 import VerifyEmail from './components/VerifyEmail';
 import Login from './components/Login';
+import RegisteVendor from "./components/RegisteVendor";
 import AxiosInstance from "./utils/AxiosInstance";
+import AddProduct from "./components/AddProduct";
+import MyProducts from "./components/MyProducts";
 
 
 function App() {
@@ -168,6 +171,9 @@ function App() {
                 <Route path='/dashboard' element={<Profile/>}/>
                 <Route path='/forget-password' element={<PasswordResetRequest/>}/>
                 <Route path='/password-reset-confirm/:uid/:token' element={<ResetPassword/>}/>
+                <Route path = '/register-vendor' element ={<RegisteVendor/>}/>
+                <Route path='/add-product' element={<AddProduct/>}/>
+                <Route path='/myproducts' element={<MyProducts/>}/>
 
 
                 {/*add more routes as needed*/}

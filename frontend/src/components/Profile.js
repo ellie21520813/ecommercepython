@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import {Link, useNavigate} from "react-router-dom";
 import { toast } from 'react-toastify';
 import AxiosInstance from "../utils/AxiosInstance";
@@ -11,6 +11,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const orders = useSelector(state => state.order);
+  const [is_vendor, setIsVendor] = useState()
   console.log(orders)
 
    useEffect(() => {
@@ -18,6 +19,7 @@ const Profile = () => {
          navigate('/login')
      }else{
       getSomeData()
+
      }
 
    }, [jwt, user])
@@ -27,13 +29,30 @@ const Profile = () => {
 
   const getSomeData =async ()=>{
       const res =await AxiosInstance.get('get-something/')
+      setIsVendor(res.data.is_vendor)
       console.log(res.data)
+  }
+
+  const register_vendor = ()=>{
+      navigate('/register-vendor')
   }
   return (
       <div>
           <div className='container'>
               <h2>hi {user && user.name}</h2>
               <p style={{textAlign: 'center',}}>welcome to your profile</p>
+              {!is_vendor?(
+                  <div>
+                      <p>You are not a vendor</p>
+                      <button className='btn btn-primary' onClick={register_vendor}>Register Vendor</button>
+                  </div>
+              ) : (
+                  <div>
+                      <p>You are a vendor</p>
+                      <Link to='/add-product'>Add Product</Link>
+                  </div>
+              )}
+
           </div>
           <h2 style={{textAlign: 'left'}}>Your Orders</h2>
           <div>

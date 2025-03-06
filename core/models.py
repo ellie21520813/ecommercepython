@@ -42,7 +42,7 @@ class OneTimePassword(models.Model):
 
 
 class Vendor(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, name="vendor")
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.CharField(max_length=255)
     contact_details = models.TextField()
     bank_details = models.TextField()
@@ -50,7 +50,7 @@ class Vendor(models.Model):
     return_policy = models.TextField()
 
     def __str__(self):
-        return self.vendor.name
+        return self.user.name
 
 
 class Category(models.Model):

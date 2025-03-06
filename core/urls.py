@@ -7,7 +7,7 @@ from .views import (
     CartItemViewSet, ShippingViewSet, PaymentViewSet, CouponViewSet, ReviewViewSet, WishlistViewSet,
     NotificationViewSet, BlogViewSet, ContactViewSet, FAQViewSet, AnalyticsViewSet, ConfigurationViewSet, TaxViewSet,
     SubscriptionViewSet, RefundViewSet, RegisterView, VerifyUserEmail, LoginUserView, PasswordResetConfirm,
-    PasswordResetRequestView, SetNewPasswordView, LogoutApiView, TestingAuthenticatedReq
+    PasswordResetRequestView, SetNewPasswordView, LogoutApiView, TestingAuthenticatedReq, MyProductViewSet
 )
 from rest_framework_simplejwt.views import (TokenRefreshView,)
 
@@ -35,6 +35,7 @@ router.register(r'configurations', ConfigurationViewSet)
 router.register(r'taxes', TaxViewSet)
 router.register(r'subscriptions', SubscriptionViewSet)
 router.register(r'refunds', RefundViewSet)
+router.register(r'my-products', MyProductViewSet, basename='my-products')
 
 urlpatterns = [
     path('api/', include(router.urls)),
@@ -47,5 +48,6 @@ urlpatterns = [
     path('api/set-new-password/', SetNewPasswordView.as_view(), name='set-new-password'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/get-something/', TestingAuthenticatedReq.as_view(), name='just-for-testing'),
+
 
 ]

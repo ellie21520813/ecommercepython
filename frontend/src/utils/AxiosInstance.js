@@ -33,9 +33,6 @@ const AxiosInstance = axios.create({
        req.headers.Authorization = localStorage.getItem('token') ? `Bearer ${JSON.parse(localStorage.getItem('token'))}` : " "
        return req
     }
-
-
-
  })
 
 export default AxiosInstance;
