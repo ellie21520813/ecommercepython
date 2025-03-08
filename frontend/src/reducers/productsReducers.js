@@ -1,12 +1,21 @@
-const initialState =[];
+const initialState = {
+    products: [],
+    productDetails: null,
+};
 
 const productsReducer = (state = initialState, action) =>{
     switch(action.type){
         case 'SET_PRODUCTS':
-            return action.payload;
+            return {
+                ...state,
+                products: action.payload
+            }
 
-        case 'SET_MY_PRODUCTS':
-            return action.payload;
+        case 'SET_PRODUCT_DETAILS':
+            return {
+                ...state,
+                productDetails: action.payload || null
+            };
 
         default:
             return state;

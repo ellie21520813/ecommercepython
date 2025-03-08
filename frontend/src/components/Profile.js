@@ -19,13 +19,15 @@ const Profile = () => {
          navigate('/login')
      }else{
       getSomeData()
-
      }
-
    }, [jwt, user])
     useEffect(()=>{
       dispatch(fetchOrders())
-  },[dispatch])
+  },[dispatch]);
+
+  if (!orders) {
+        return <div className="text-center">Loading...</div>;
+    }
 
   const getSomeData =async ()=>{
       const res =await AxiosInstance.get('get-something/')

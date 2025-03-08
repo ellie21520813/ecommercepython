@@ -39,6 +39,7 @@ router.register(r'my-products', MyProductViewSet, basename='my-products')
 
 urlpatterns = [
     path('api/', include(router.urls)),
+    path('api/products/<slug:slug>/', ProductViewSet.as_view({'get': 'retrieve'}), name='product-detail'),
     path('api/signup/', RegisterView.as_view(), name='register'),
     path('api/verify-email/', VerifyUserEmail.as_view(), name='verify-email'),
     path('api/login/', LoginUserView.as_view(), name='login'),

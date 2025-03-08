@@ -1,6 +1,6 @@
 import React from 'react'
 import {Link, useNavigate} from "react-router-dom";
-import {useState, useEffect} from "react";
+import {useEffect} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {getMyProducts, deleteMyProduct} from "../redux/actions/myProductActions";
 
@@ -38,7 +38,7 @@ const MyProducts=()=>{
                                     <p className="card-text">Stock: {product.stock}</p>
                                     <div className= "d-flex justify-content-center gap-2">
                                         <Link to={`/products/${product.slug}`} className="btn btn-primary">View detail</Link>
-                                        <Link to={`/`} className="btn btn-primary">Update</Link>
+                                        <Link to={`/edit-product/${product.slug}`} className="btn btn-primary">Update</Link>
                                         <button className="btn btn-primary" onClick={() => handleRemoveFromMyProduct(product.id)}>Delete</button>
                                     </div>
                                 </div>

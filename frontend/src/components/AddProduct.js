@@ -60,9 +60,6 @@ const AddProduct=()=>{
       console.error(error.response?.data)
       alert('Error adding product')
     }
-
-
-
   }
   const handleChange=(e)=>{
     const {name, type, files, value} = e.target

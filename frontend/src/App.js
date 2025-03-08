@@ -19,6 +19,7 @@ import RegisteVendor from "./components/RegisteVendor";
 import AxiosInstance from "./utils/AxiosInstance";
 import AddProduct from "./components/AddProduct";
 import MyProducts from "./components/MyProducts";
+import UpdateProduct from "./components/UpdateProduct";
 
 
 function App() {
@@ -174,6 +175,7 @@ function App() {
                 <Route path = '/register-vendor' element ={<RegisteVendor/>}/>
                 <Route path='/add-product' element={<AddProduct/>}/>
                 <Route path='/myproducts' element={<MyProducts/>}/>
+                <Route path='/edit-product/:slug' element={<UpdateProduct/>}/>
 
 
                 {/*add more routes as needed*/}
