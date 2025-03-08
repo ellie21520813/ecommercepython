@@ -7,7 +7,6 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import serializers
-import logging
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404
 from .models import (
@@ -23,7 +22,6 @@ from .serializers import (
     LoginSerializer, PasswordResetRequestSerializer, SetNewPasswordSerializer, LogoutUserSerializer
 )
 from rest_framework import viewsets, status
-
 from .utils import send_generated_otp_to_email
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import permission_classes

@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Link,useNavigate, useParams} from "react-router-dom";
+import React, {useEffect} from 'react';
+import {Link,useNavigate} from "react-router-dom";
 import {useDispatch, useSelector} from "react-redux";
 import {fetchCarts} from "../redux/actions/cartsActions";
 import {deleteCartItems} from "../redux/actions/cartItemsActions";
@@ -12,6 +12,9 @@ const CartPage=({cart, setCart})=>{
     useEffect(() => {
         dispatch(fetchCarts())
     }, [dispatch]);
+    if (!cartitems) {
+        return <div className="text-center">Loading...</div>;
+    }
     const handleRemoveFromCart = (itemToRemove)=>{
         /* updateCart = cartitems.filter((item)=> item.id !== itemToRemove.id);
         localStorage.setItem("cart", JSON.stringify(updateCart));

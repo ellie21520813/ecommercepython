@@ -1,9 +1,8 @@
 import React from 'react'
-import axios from 'axios'
 import {useParams, useNavigate} from "react-router-dom";
 import {useEffect, useState} from "react";
 import {useSelector, useDispatch} from "react-redux";
-import {fetchProductsDetails} from "../redux/actions/productsActions";
+import { fetchProductsDetails, updateProduct} from "../redux/actions/productsActions";
 import {fetchCategories} from "../redux/actions/categoriesActions";
 
 const UpdateProduct=()=>{
@@ -54,29 +53,21 @@ const UpdateProduct=()=>{
     const handleSubmit = async (e) => {
         e.preventDefault();
         try{
-            const token = JSON.parse(localStorage.getItem('token'))
             const formDatatoSend = new FormData();
             formDatatoSend.append('name', name);
             formDatatoSend.append('description', description);
             formDatatoSend.append('price', price);
             formDatatoSend.append('stock', stock);
-            if (image instanceof File) {  // Chỉ gửi file nếu là file thật
+            if (image instanceof File) {
                         formDatatoSend.append('image', image);
-                    }            formDatatoSend.append('is_flashsale', is_flashsale);
+                    }
+            formDatatoSend.append('is_flashsale', is_flashsale);
             formDatatoSend.append('category', category);
 
-            const response = await axios.put(`http://localhost:8000/api/my-products/${slug}/`, formDatatoSend, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "multipart/form-data",
-                },
-            });
-            console.log(response)
+            dispatch(updateProduct(slug, formDatatoSend))
+                .then(() => navigate('/myproducts'))
+                .catch((err) => console.error("Update product creation failed:", err));
 
-            if(response.status=== 200){
-                alert('Product added successfully')
-                navigate('/myproducts')
-            }
         }
         catch(error){
             console.error(error.response?.data)

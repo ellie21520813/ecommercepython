@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react'
 import {Link, useNavigate} from "react-router-dom";
-import { toast } from 'react-toastify';
 import AxiosInstance from "../utils/AxiosInstance";
 import {useSelector, useDispatch} from "react-redux";
 import {fetchOrders} from "../redux/actions/ordersActions";
@@ -10,9 +9,8 @@ const Profile = () => {
   const user = JSON.parse(localStorage.getItem('user'))
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const orders = useSelector(state => state.order);
+  const orders = useSelector(state => state.order.orders);
   const [is_vendor, setIsVendor] = useState()
-  console.log(orders)
 
    useEffect(() => {
      if (jwt === null && !user) {
@@ -28,11 +26,11 @@ const Profile = () => {
   if (!orders) {
         return <div className="text-center">Loading...</div>;
     }
-
+    console.log(orders)
   const getSomeData =async ()=>{
       const res =await AxiosInstance.get('get-something/')
       setIsVendor(res.data.is_vendor)
-      console.log(res.data)
+      console.log('vendor',res.data)
   }
 
   const register_vendor = ()=>{
@@ -50,9 +48,9 @@ const Profile = () => {
                   </div>
               ) : (
                   <div>
-                      <p>You are a vendor</p>
-                      <Link to='/add-product'>Add Product</Link>
-                      <Link to='/myproducts'>My Product</Link>
+                      <p style={{textAlign: 'center',}}>You are a vendor</p>
+                      <p style={{textAlign: 'center',}}>
+                          <Link to='/add-product'>Add Product</Link> Or <Link to='/myproducts'>My Product</Link></p>
                   </div>
               )}
 

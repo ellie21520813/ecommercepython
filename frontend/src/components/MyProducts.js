@@ -5,7 +5,6 @@ import {useDispatch, useSelector} from "react-redux";
 import {getMyProducts, deleteMyProduct} from "../redux/actions/myProductActions";
 
 const MyProducts=()=>{
-    const navigate = useNavigate();
     const dispatch = useDispatch();
     const myproducts = useSelector(state=>state.myproducts);
     useEffect(()=>{

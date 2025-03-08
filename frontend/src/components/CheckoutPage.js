@@ -1,12 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import {Link, useNavigate} from "react-router-dom";
-import PhoneInput from "react-phone-input-2";
 import  'react-phone-input-2/lib/style.css';
-import axios from "axios";
 import {useSelector, useDispatch} from "react-redux";
 import {fetchCarts} from "../redux/actions/cartsActions";
+import {createOrder} from "../redux/actions/ordersActions";
 
-const CheckoutPage=({cart, setCart})=>{
+const CheckoutPage=()=>{
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const cart_items = useSelector(state => state.carts)
@@ -35,8 +34,7 @@ const CheckoutPage=({cart, setCart})=>{
 
         }
     )
-    const [country, setCountry] = useState("");
-    const [phone, setPhone] = useState("");
+
     const [paymentMethod, setPaymentMethod] = useState("")
     const handleOnchange = (e) =>{
         setFormData({...formdata, [e.target.name]: e.target.value})
@@ -51,7 +49,7 @@ const CheckoutPage=({cart, setCart})=>{
                 alert("Bạn cần đăng nhập trước khi đặt hàng.");
                 navigate("/login");
                 return;
-        }
+            }
             const orderData = {
                 ...formdata,
                 order_items: cart_items[0].items.map(item => ({
@@ -60,18 +58,9 @@ const CheckoutPage=({cart, setCart})=>{
                 }))
             };
             console.log(orderData);
-            const response = await axios.post('http://localhost:8000/api/orders/', orderData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,  // Gửi token
-                        "Content-Type": "application/json"
-                        }
-                    });
-            console.log("Order created successfully:", response.data);
-            if(response.status === 201){
-                navigate('/dashboard')
-                alert('order created successfully')
-            }
+            dispatch(createOrder(orderData))
+                .then(() => navigate('/dashboard'))
+                .catch((err) => console.error("Order creation failed:", err));
         } catch(error){
             console.error("Error creating order:", error);
             alert('Error creating order')
@@ -180,7 +169,7 @@ const CheckoutPage=({cart, setCart})=>{
                                             <input
                                                 type="number"
                                                 min="1"
-                                                value={item.quantity}
+                                                defaultValue={item.quantity}
                                             />
                                         </td>
                                         <td>

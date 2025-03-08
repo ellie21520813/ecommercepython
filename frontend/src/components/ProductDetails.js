@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {useParams, useNavigate} from "react-router-dom";
 import axios from "axios";
 
-const ProductDetails = ({})=>{
+const ProductDetails = ()=>{
     const {slug} = useParams();
     const [product, setProduct] = useState([]);
     const [quantity, setQuantity] = useState(1);

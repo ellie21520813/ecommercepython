@@ -2,8 +2,8 @@ import React from 'react';
 import {useState, useEffect} from "react";
 import {useSelector, useDispatch} from "react-redux";
 import {fetchCategories} from "../redux/actions/categoriesActions";
-import axios from "axios";
 import {useNavigate} from "react-router-dom";
+import {addProduct} from "../redux/actions/productsActions";
 
 const AddProduct=()=>{
   const [formData, setFormData] = useState({
@@ -28,7 +28,6 @@ const AddProduct=()=>{
     e.preventDefault()
 
     try{
-      const token = JSON.parse(localStorage.getItem('token'))
       const formDataToSend = new FormData();
       formDataToSend.append("category", category);
       formDataToSend.append("name", name);
@@ -43,17 +42,9 @@ const AddProduct=()=>{
         console.log(pair[0], pair[1]);
       }
 
-      const response = await axios.post("http://localhost:8000/api/products/", formDataToSend, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-        });
-      console.log(response)
-      if(response.status=== 201){
-        alert('Product added successfully')
-        navigate('/myproducts')
-      }
+      dispatch(addProduct(formDataToSend))
+                .then(() => navigate('/myproducts'))
+                .catch((err) => console.error("Add product creation failed:", err));
     }
     catch (error) {
       console.log(error)
