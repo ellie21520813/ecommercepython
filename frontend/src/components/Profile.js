@@ -52,6 +52,7 @@ const Profile = () => {
                   <div>
                       <p>You are a vendor</p>
                       <Link to='/add-product'>Add Product</Link>
+                      <Link to='/myproducts'>My Product</Link>
                   </div>
               )}
 
