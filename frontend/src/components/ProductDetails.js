@@ -20,7 +20,6 @@ const ProductDetails = ()=>{
                 } else {
                     console.error('No product found with this slug');
                 }
-
             }
             catch (error){
                 console.log(error);
@@ -110,8 +109,9 @@ const ProductDetails = ()=>{
            {product.vendor && (
                <div className="vendor-infor">
                    <h3>Vendor information</h3>
-                   <p>Vendor: {product.vendor.id}</p>
+                   <p>Vendor: {product.vendor.user}</p>
                    <p>Contact: {product.vendor.contact_details}</p>
+                   <p>Bio: {product.vendor.bio}</p>
                </div>
            )}
 

@@ -188,6 +188,28 @@ class ProductViewSet(viewsets.ModelViewSet):
     parser_classes = (MultiPartParser, FormParser)
     lookup_field = 'slug'
 
+    def retrieve(self, request, *args, **kwargs):
+        slug = self.kwargs.get('slug')
+        print(slug)
+        product = get_object_or_404(Product, slug=slug)
+        serializer = self.get_serializer(product)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@permission_classes([IsAuthenticated,IsVendor])
+class MyProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    parser_classes = (MultiPartParser, FormParser)
+    lookup_field = 'slug'
+
+    def get_queryset(self):
+        if not self.request.user or not self.request.user.is_authenticated:
+            return Response({"detail": "Authentication credentials were not provided."},
+                                status=status.HTTP_401_UNAUTHORIZED)
+        vendor = Vendor.objects.get(user=self.request.user.id)
+        return Product.objects.filter(vendor=vendor)
+
     def perform_create(self, serializer):
         if not self.request.user or not self.request.user.is_authenticated:
             return Response({"detail": "Authentication credentials were not provided."},
@@ -222,27 +244,6 @@ class ProductViewSet(viewsets.ModelViewSet):
             print("❌ Error creating product:", str(e))
             return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    def retrieve(self, request, *args, **kwargs):
-        slug = self.kwargs.get('slug')
-        print(slug)
-        product = get_object_or_404(Product, slug=slug)
-        serializer = self.get_serializer(product)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-@permission_classes([IsAuthenticated,IsVendor])
-class MyProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    lookup_field = 'slug'
-
-    def get_queryset(self):
-        if not self.request.user or not self.request.user.is_authenticated:
-            return Response({"detail": "Authentication credentials were not provided."},
-                                status=status.HTTP_401_UNAUTHORIZED)
-        vendor = Vendor.objects.get(user=self.request.user.id)
-        return Product.objects.filter(vendor=vendor)
-
     def update(self, request, *args, **kwargs):
         try:
             slug = self.kwargs.get('slug')
@@ -257,17 +258,19 @@ class MyProductViewSet(viewsets.ModelViewSet):
         except Product.DoesNotExist:
             return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    def destroy(self, request, pk=None):
+    def destroy(self, request, slug=None):
         try:
-            print(f"Received pk: {pk}")
-            product = self.get_object()
+            slug = self.kwargs.get('slug')
+            print(f"Received pk: {slug}")
+            product = Product.objects.get(id=slug)
+            #product = self.get_object()
             product.delete()
             return Response({'message': 'product item deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
         except Product.DoesNotExist:
             return Response({'message': 'Product item not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
+
 
 @permission_classes([IsAuthenticated])
 class OrderViewSet(viewsets.ModelViewSet):

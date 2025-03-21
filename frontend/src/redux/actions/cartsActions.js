@@ -1,15 +1,9 @@
 import axios from "axios";
+import AxiosInstance from "../../utils/AxiosInstance";
 
 export  const  fetchCarts = ()=> async (dispatch)=>{
     try{
-        const token = JSON.parse(localStorage.getItem('token'))
-        const response = await axios.get("http://localhost:8000/api/carts",{
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json"
-
-            }
-        })
+        const response = await AxiosInstance.get("carts")
         dispatch({type:'SET_CARTS', payload: response.data});
     } catch(e){
         console.error("error to fetching",e);

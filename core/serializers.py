@@ -153,9 +153,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class VendorSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.name', read_only=True)
     class Meta:
         model = Vendor
-        fields = ['bio','contact_details', 'bank_details', 'shipping_policy', 'return_policy']
+        fields = ['user', 'bio', 'contact_details', 'bank_details', 'shipping_policy', 'return_policy']
 
 
 class CategorySerializer(serializers.ModelSerializer):

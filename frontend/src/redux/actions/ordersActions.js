@@ -1,34 +1,23 @@
 import axios from "axios";
-
-const token = JSON.parse(localStorage.getItem('token'))
+import AxiosInstance from "../../utils/AxiosInstance";
 
 export const fetchOrders = ()=> async (dispatch)=>{
     try{
-        const response = await axios.get("http://localhost:8000/api/orders/",{
-            headers:{
-                Authorization:  `Bearer ${token}`,
-                "Content-Type": "application/json"
-            }
-        });
+        const response = await AxiosInstance.get("orders/");
         dispatch({
             type: 'SET_ORDERS',
             payload: response.data
         });
     }
     catch (e){
+        console.error(e.response?.data)
         console.error("Error fetching orders", e);
     }
 }
 
 export const createOrder = (order)=> async (dispatch)=>{
     try{
-        const response = await axios.post('http://localhost:8000/api/orders/', order,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,  // Gửi token
-                        "Content-Type": "application/json"
-                        }
-                    });
+        const response = await AxiosInstance.post('orders/', order);
         console.log("Order created successfully:", response.data);
         if (response.status === 201) {
             dispatch({

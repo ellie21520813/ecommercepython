@@ -54,6 +54,7 @@ function App() {
             }
         } catch (error) {
             console.error("Logout failed:", error);
+            console.error(error.response?.data)
             if (error.response) {
                 alert("Logout failed: " + error.response.data.message || "Unknown error");
             } else {

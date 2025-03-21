@@ -13,8 +13,8 @@ const MyProducts=()=>{
     console.log(myproducts)
 
     const handleRemoveFromMyProduct = (itemToRemove)=>{
- 
             dispatch(deleteMyProduct(itemToRemove)).then(()=>{
+                alert('Removed  product '+itemToRemove +' from my products')
                 dispatch(getMyProducts())
             });
         };

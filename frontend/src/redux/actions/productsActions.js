@@ -1,9 +1,10 @@
 import axios from "axios";
+import AxiosInstance from "../../utils/AxiosInstance";
 
 const token = JSON.parse(localStorage.getItem('token'));
 export const fetchProducts = ()=> async (dispatch)  =>{
     try{
-        const response = await axios.get('http://127.0.0.1:8000/api/products/');
+        const response = await AxiosInstance.get('products/');
         dispatch({
             type: 'SET_PRODUCTS',
             payload: response.data});
@@ -15,7 +16,7 @@ export const fetchProducts = ()=> async (dispatch)  =>{
 
 export const fetchProductsDetails=(slug)=> async (dispatch) =>{
     try{
-        const response = await axios.get(`http://127.0.0.1:8000/api/products/${slug}/`);
+        const response = await AxiosInstance.get(`products/${slug}/`);
         dispatch({
             type: 'SET_PRODUCT_DETAILS',
             payload: response.data
@@ -28,7 +29,7 @@ export const fetchProductsDetails=(slug)=> async (dispatch) =>{
 
 export const addProduct=(productData)=> async (dispatch)=>{
     try{
-        const response = await axios.post("http://localhost:8000/api/products/", productData, {
+        const response = await axios.post("http://localhost:8000/api/my-products/", productData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

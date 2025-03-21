@@ -15,7 +15,7 @@ const rootReducer = combineReducers({
     cartitems : cartItemsReducers,
     order : orderReducer,
     orderitems: orderitemsReducer,
-    myproducts: myProductReducers
+    myproducts: myProductReducers,
 })
 const store =   createStore(rootReducer, applyMiddleware(thunk));
 
