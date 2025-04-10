@@ -8,8 +8,6 @@ import React, {useState} from "react";
 import CategoryPage from "./components/CategoryPage";
 import CheckoutPage from "./components/CheckoutPage";
 import Signup from "./components/Signup";
-import {toast, ToastContainer} from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import PasswordResetRequest from './components/PasswordResetRequest';
 import ResetPassword from './components/ResetPassword';
 import Profile from './components/Profile';

@@ -88,6 +88,7 @@ const Login = () => {
                             <input type="submit" value="Login" className="submitButton" id="btn"/>
                         </div>
                         <p><Link className="signlink" to="/forget-password">Forgot Password?</Link></p>
+                        <p><Link className="signlink" to="/signup">Sign up now</Link> </p>
                     </form>
                 </div>
             </section>

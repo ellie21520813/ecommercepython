@@ -2,8 +2,9 @@ import React from 'react'
 import {useParams, useNavigate} from "react-router-dom";
 import {useEffect, useState} from "react";
 import {useSelector, useDispatch} from "react-redux";
-import { fetchProductsDetails, updateProduct} from "../redux/actions/productsActions";
+import { fetchProductsDetails} from "../redux/actions/productsActions";
 import {fetchCategories} from "../redux/actions/categoriesActions";
+import {updateProduct} from "../redux/actions/myProductActions";
 
 const UpdateProduct=()=>{
     const dispatch = useDispatch();

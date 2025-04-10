@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {Link, useNavigate} from "react-router-dom";
-import  'react-phone-input-2/lib/style.css';
 import {useSelector, useDispatch} from "react-redux";
 import {fetchCarts} from "../redux/actions/cartsActions";
 import {createOrder} from "../redux/actions/ordersActions";
@@ -39,7 +38,7 @@ const CheckoutPage=()=>{
     const handleOnchange = (e) =>{
         setFormData({...formdata, [e.target.name]: e.target.value})
     }
-    const {name_order,  email_order, phone_order, shipping_address, total_price} = formdata
+    const {name_order,  email_order, phone_order, shipping_address} = formdata
 
     const handleSubmit= async(e)=>{
         e.preventDefault();

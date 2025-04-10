@@ -1,16 +1,20 @@
 import React from 'react'
-import {Link, useNavigate} from "react-router-dom";
+import {Link} from "react-router-dom";
 import {useEffect} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {getMyProducts, deleteMyProduct} from "../redux/actions/myProductActions";
 
 const MyProducts=()=>{
     const dispatch = useDispatch();
-    const myproducts = useSelector(state=>state.myproducts);
+    const mylistproducts = useSelector(state=>state.myproducts.myProducts);
     useEffect(()=>{
         dispatch(getMyProducts())
     },[dispatch])
-    console.log(myproducts)
+    console.log(mylistproducts)
+
+    if (!Array.isArray(mylistproducts)) {
+        return <div>Loading...</div>;
+    }
 
     const handleRemoveFromMyProduct = (itemToRemove)=>{
             dispatch(deleteMyProduct(itemToRemove)).then(()=>{
@@ -25,7 +29,7 @@ const MyProducts=()=>{
             <h5>This is the list of products I've sold.</h5>
             <div className="category-products">
                 <div className="row">
-                    {myproducts.map(product => (
+                    {mylistproducts.map(product => (
                         <div key={product.id} className="col-md-3 mb-4">
                             <div className="card">
                                 <img src={product.image} alt={product.name} className="my-img card-img-top"/>

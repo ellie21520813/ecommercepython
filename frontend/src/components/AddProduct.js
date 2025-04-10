@@ -3,7 +3,7 @@ import {useState, useEffect} from "react";
 import {useSelector, useDispatch} from "react-redux";
 import {fetchCategories} from "../redux/actions/categoriesActions";
 import {useNavigate} from "react-router-dom";
-import {addProduct} from "../redux/actions/productsActions";
+import {addProduct} from "../redux/actions/myProductActions";
 
 const AddProduct=()=>{
   const [formData, setFormData] = useState({

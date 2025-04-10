@@ -1,42 +1,27 @@
 import React, {useEffect, useState} from 'react';
 import {useParams, useNavigate} from "react-router-dom";
 import axios from "axios";
+import {useDispatch} from "react-redux";
+import {fetchProductsDetails} from "../redux/actions/productsActions";
+import {useSelector} from "react-redux";
 
 const ProductDetails = ()=>{
     const {slug} = useParams();
-    const [product, setProduct] = useState([]);
+    const product = useSelector(state => state.products.productDetails)
     const [quantity, setQuantity] = useState(1);
     const [cart, setCart] = useState([]);
     const navigate = useNavigate();
+    const dispatch =useDispatch()
 
     useEffect(()=>{
-        const fetchProductDetails = async ()=>{
-            try{
-                const response = await axios.get(`http://127.0.0.1:8000/api/products/?slug=${slug}`);
-                const data = response.data;
-                const filteredProducts = data.filter((pro) => pro.slug === slug);
-                if (filteredProducts.length > 0) {
-                    setProduct(filteredProducts[0]);
-                } else {
-                    console.error('No product found with this slug');
-                }
-            }
-            catch (error){
-                console.log(error);
-            }
-        };
-        fetchProductDetails();
-        const cartData = localStorage.getItem("cart")
-        if (cartData) {
-            setCart(JSON.parse(cartData));
-        }
+        dispatch(fetchProductsDetails(slug))
+    },[dispatch, slug]);
 
-    },[slug]);
     if (!product) {
-        return <div>Loading...</div>;
+        return <div>Loading product...</div>;
     }
 
-    const handleAddToCart = async (e) => {
+    const handleAddToCart = async () => {
         const token = JSON.parse(localStorage.getItem('token'))
         const cartItems ={
             product: product.id,
